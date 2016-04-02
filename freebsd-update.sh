@@ -53,6 +53,7 @@ Options:
   --not-running-from-cron
                -- Run without a tty, for use by automated tools
 Commands:
+  clean        -- Clean workdir
   fetch        -- Fetch updates from server
   cron         -- Sleep rand(3600) seconds, fetch updates, and send an
                   email if updates were found
@@ -474,7 +475,7 @@ parse_cmdline () {
 			;;
 
 		# Commands
-		cron | fetch | upgrade | install | rollback | IDS)
+		clean | cron | fetch | upgrade | install | rollback | IDS)
 			COMMANDS="${COMMANDS} $1"
 			;;
 
@@ -557,6 +558,25 @@ default_params () {
 
 	# Merge these defaults into the earlier-configured settings
 	mergeconfig
+}
+
+# Perform sanity checks in preparation of cleaning workdir.
+clean_check_params () {
+	# Check that we are root.  All sorts of things won't work otherwise.
+	if [ `id -u` != 0 ]; then
+		echo "You must be root to run this."
+		exit 1
+	fi
+
+	# Check that we have a working directory.
+	_WORKDIR_bad="Directory does not exist or is not writable: "
+	if ! [ -d "${WORKDIR}" -a -w "${WORKDIR}" ]; then
+		echo -n "`basename $0`: "
+		echo -n "${_WORKDIR_bad}"
+		echo ${WORKDIR}
+		exit 1
+	fi
+	cd ${WORKDIR} || exit 1
 }
 
 # Set utility output filtering options, based on ${VERBOSELEVEL}
@@ -2047,6 +2067,12 @@ fetch_warn_eol () {
 	echo ${NOWTIME} > lasteolwarn
 }
 
+# Clean workdir.
+clean_run() {
+        cd ${WORKDIR} || exit 1
+	rm -fr *
+}
+
 # Do the actual work involved in "fetch" / "cron".
 fetch_run () {
 	workdir_init || return 1
@@ -3223,6 +3249,12 @@ get_params () {
 	parse_cmdline $@
 	parse_conffile
 	default_params
+}
+
+# Clean command. Allow non-interactive use.
+cmd_clean () {
+        clean_check_params
+	clean_run || exit 1
 }
 
 # Fetch command.  Make sure that we're being called
