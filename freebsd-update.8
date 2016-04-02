@@ -119,6 +119,12 @@ The
 .Cm command
 can be any one of the following:
 .Bl -tag -width "rollback"
+.It Cm clean
+Clean the contents of
+.Ar workdir .
+(default:
+.Ar /var/db/freebsd-update/
+).
 .It Cm fetch
 Based on the currently installed world and the configuration
 options set, fetch all available binary updates.
