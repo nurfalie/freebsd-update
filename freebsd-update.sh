@@ -2069,8 +2069,7 @@ fetch_warn_eol () {
 
 # Clean workdir.
 clean_run() {
-        cd ${WORKDIR} || exit 1
-	rm -fr *
+        rm -fr *
 }
 
 # Do the actual work involved in "fetch" / "cron".
